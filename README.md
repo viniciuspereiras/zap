@@ -6,3 +6,15 @@
 |#|/|__|\ /___\__,_/ .___/  
 '-' d  b          /_/  
 ```
+Welcome to ZAP, almost no rules, it runs (this matters)
+## Start
+```
+npm install
+```
+- Maybe you will need to have google chrome
+- If you have some problem, open a issue, someone can help you
+## Running
+- for debug:
+```node app.js```
+- for(ever)
+  ```pm2 start app.js```
