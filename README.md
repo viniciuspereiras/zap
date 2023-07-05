@@ -6,7 +6,7 @@
 |#|/|__|\ /___\__,_/ .___/  
 '-' d  b          /_/  
 ```
-Welcome to ZAP, almost no rules, it runs (this matters)
+Welcome to ZAP zap zap zap
 ## Start
 ```
 npm install
