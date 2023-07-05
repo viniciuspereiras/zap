@@ -1,0 +1,7 @@
+{
+    "ping": "ping",
+    "dalle": "/dalle2",
+    "gptquestion": "/gpt",
+    "sticker": "/sticker",
+    "everyone": "@everyone"
+}
