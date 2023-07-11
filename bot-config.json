@@ -1,7 +1,12 @@
 {
     "ping": "ping",
+    "gpt4":"/gpt4",
     "dalle": "/dalle2",
     "gptquestion": "/gpt",
+    "muie": "/muie",
+    "cries": "/cries",
+    "badgpt": "/bgpt",
     "sticker": "/sticker",
+    "show": "/show",
     "everyone": "@everyone"
 }
