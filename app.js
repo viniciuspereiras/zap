@@ -149,6 +149,18 @@ client.on('qr', qr => {
 client.on('authenticated', (session) => printSuccess(`Whatsapp authentication success!`))
 client.on('ready', () => printSuccess('Ready to go'))
 client.on('message_create', message => commands(message))
+
+client.on('message_revoke_everyone', async (after, before) => {
+        const sender_a = await before.getContact()
+        const chat_a = await before.getChat()
+        console.log(sender_a)
+        const t = `Mensagem apagada\nEnviada por: ${sender_a.pushname}\nEm: ${chat_a.name}\nConteudo:\n${before.body} `
+        printInfo(`Mensagem apagada por ${sender_a.pushname}, enviando para o pv...`)
+        client.sendMessage(process.env.PHONE_NUMBER, t)
+
+});
+
+
 client.initialize();
 
 
@@ -196,7 +208,7 @@ const commands = async (message) => {
         case callers.gptquestion:
             const gptquestion = content_after_caller;
             printCall(sender_contact, callers.gptquestion)
-            chatGPT(gptquestion).then(async (response) => {
+            chatGPT4(gptquestion).then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
                     printError('GPT resonded with error')
                     message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`) // remove new lines and double quotes
