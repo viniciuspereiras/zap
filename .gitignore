@@ -129,7 +129,9 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-#WWeb
-.wwebjs*
 
+
+#WWeb
+.wweb*
+tmp/
 

@@ -4,6 +4,8 @@ const colors = require('colors');
 const fs = require('fs');
 const { send } = require('process');
 const { Configuration, OpenAIApi } = require("openai");
+const Math = require('mathjs')
+
 
 require('dotenv').config()
 
@@ -79,6 +81,21 @@ const getDalle2Response = async (clientText) => {
         return "```Erro, verifique se o prompt não contém nomes de pessoas famosas e instruções NSFW```"
     }
 }
+
+
+const speech_to_text_whisper = async (audio_file) => {
+    try {
+        const transcript = await openai.createTranscription(
+            fs.createReadStream(audio_file),
+            "whisper-1"
+        );
+        return transcript.data.text;
+    } catch (e) {
+        consorle.log(e)
+        return e
+    }
+}
+
 
 // node functions
 
@@ -304,8 +321,11 @@ const commands = async (message) => {
         break
 
         case callers.gpt4:
-            const gpt4question = content_after_caller;
             printCall(sender_contact, callers.gpt4)
+            if (message.hasQuotedMsg) {
+                content_after_caller += quotedMsg.body
+            }
+            const gpt4question = content_after_caller
             GPT4(gpt4question).then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
                     printError('GPT4 resonded with error')
@@ -316,6 +336,31 @@ const commands = async (message) => {
                 }
             })
             break
+        
+        case callers.transcribe:
+            printCall(sender_contact, callers.transcribe)
+            if (quotedMsg && quotedMsg.hasMedia) {
+                if (quotedMsg.type.includes("ptt") || quotedMsg.type.includes("audio") || quotedMsg.type.includes("video")) {
+                    const media = await quotedMsg.downloadMedia();
+    
+                    if (!fs.existsSync('./tmp')) {
+                        fs.mkdirSync('./tmp');
+                    }
+                    const fileName = `./tmp/${Math.random().toString(36).substring(7)}.ogg`;
+                    fs.writeFileSync(fileName, media.data, { encoding: 'base64' });
+                    printSuccess('file saved')
+                }
+                // transcribe
+                text = await speech_to_text_whisper(fileName)
+                console.log(text)
+                message.reply(text)
+                fs.unlinkSync(fileName)
+
+
+            
+            } else {
+                message.reply('Você precisa responder a uma mensagem de audio ou video para que eu possa transcrever')
+            }
     }
 
 }
