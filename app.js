@@ -348,13 +348,11 @@ const commands = async (message) => {
                     const fileName = `./tmp/${Math.random().toString(36).substring(7)}.ogg`;
                     fs.writeFileSync(fileName, media.data, { encoding: 'base64' });
                     printSuccess('file saved')
-                }
                 // transcribe
                 text = await speech_to_text_whisper(fileName)
-                console.log(text)
                 message.reply(text)
                 fs.unlinkSync(fileName)
-
+                 }
 
             
             } else {
