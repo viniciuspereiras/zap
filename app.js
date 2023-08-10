@@ -91,8 +91,8 @@ const speech_to_text_whisper = async (audio_file) => {
         );
         return transcript.data.text;
     } catch (e) {
-        console.log(e)
-	    return e
+        consorle.log(e)
+        return e
     }
 }
 
@@ -321,8 +321,11 @@ const commands = async (message) => {
         break
 
         case callers.gpt4:
-            const gpt4question = content_after_caller;
             printCall(sender_contact, callers.gpt4)
+            if (message.hasQuotedMsg) {
+                content_after_caller += quotedMsg.body
+            }
+            const gpt4question = content_after_caller
             GPT4(gpt4question).then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
                     printError('GPT4 resonded with error')
@@ -339,19 +342,20 @@ const commands = async (message) => {
             if (quotedMsg && quotedMsg.hasMedia) {
                 if (quotedMsg.type.includes("ptt") || quotedMsg.type.includes("audio") || quotedMsg.type.includes("video")) {
                     const media = await quotedMsg.downloadMedia();
-                    // verify if exists a tmp directory if not create one
+    
                     if (!fs.existsSync('./tmp')) {
                         fs.mkdirSync('./tmp');
                     }
-                    // random file name
-                    const fileName = `./tmp/oi.ogg`;
+                    const fileName = `./tmp/${Math.random().toString(36).substring(7)}.ogg`;
                     fs.writeFileSync(fileName, media.data, { encoding: 'base64' });
                     printSuccess('file saved')
                 }
                 // transcribe
-                text = await speech_to_text_whisper('./tmp/oi.ogg')
+                text = await speech_to_text_whisper(fileName)
                 console.log(text)
-		message.reply(text)
+                message.reply(text)
+                fs.unlinkSync(fileName)
+
 
             
             } else {
@@ -360,4 +364,3 @@ const commands = async (message) => {
     }
 
 }
-
