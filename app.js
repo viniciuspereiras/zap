@@ -11,7 +11,6 @@ require('dotenv').config()
 
 let openai
 
-console.log(process.env.OPENAI_API_KEY)
 if (process.env.OPENAI_API_KEY != null) {
     const configuration = new Configuration({
         apiKey: process.env.OPENAI_API_KEY,
