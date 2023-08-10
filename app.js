@@ -4,6 +4,8 @@ const colors = require('colors');
 const fs = require('fs');
 const { send } = require('process');
 const { Configuration, OpenAIApi } = require("openai");
+const Math = require('mathjs')
+
 
 require('dotenv').config()
 
@@ -79,6 +81,21 @@ const getDalle2Response = async (clientText) => {
         return "```Erro, verifique se o prompt não contém nomes de pessoas famosas e instruções NSFW```"
     }
 }
+
+
+const speech_to_text_whisper = async (audio_file) => {
+    try {
+        const transcript = await openai.createTranscription(
+            fs.createReadStream(audio_file),
+            "whisper-1"
+        );
+        return transcript.data.text;
+    } catch (e) {
+        console.log(e)
+	    return e
+    }
+}
+
 
 // node functions
 
@@ -316,6 +333,31 @@ const commands = async (message) => {
                 }
             })
             break
+        
+        case callers.transcribe:
+            printCall(sender_contact, callers.transcribe)
+            if (quotedMsg && quotedMsg.hasMedia) {
+                if (quotedMsg.type.includes("ptt") || quotedMsg.type.includes("audio") || quotedMsg.type.includes("video")) {
+                    const media = await quotedMsg.downloadMedia();
+                    // verify if exists a tmp directory if not create one
+                    if (!fs.existsSync('./tmp')) {
+                        fs.mkdirSync('./tmp');
+                    }
+                    // random file name
+                    const fileName = `./tmp/oi.ogg`;
+                    fs.writeFileSync(fileName, media.data, { encoding: 'base64' });
+                    printSuccess('file saved')
+                }
+                // transcribe
+                text = await speech_to_text_whisper('./tmp/oi.ogg')
+                console.log(text)
+		message.reply(text)
+
+            
+            } else {
+                message.reply('Você precisa responder a uma mensagem de audio ou video para que eu possa transcrever')
+            }
     }
 
 }
+
