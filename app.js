@@ -1,63 +1,52 @@
 const { Client, MessageMedia, LocalAuth } = require('whatsapp-web.js')
 const qrcode = require('qrcode-terminal')
 const colors = require('colors');
-const axios = require('axios')
 const fs = require('fs');
 const { send } = require('process');
-
+const { Configuration, OpenAIApi } = require("openai");
 
 require('dotenv').config()
+
+let openai
+
+console.log(process.env.OPENAI_API_KEY)
+if (process.env.OPENAI_API_KEY != null) {
+    const configuration = new Configuration({
+        apiKey: process.env.OPENAI_API_KEY,
+    });
+    openai = new OpenAIApi(configuration);
+}
 
 // bot functions
     // OpenAI
 
-const chatGPT = async (clientText) => {
-    const headers = {
-        'Authorization': `Bearer ${process.env.OPENAI_KEY}`,
-        'Content-Type': 'application/json'
-    }
-
-    const axiosInstance = axios.create({
-        baseURL: 'https://api.openai.com/',
-        timeout: 120000,
-        headers: headers
-    });
-    const body = {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": clientText}],
-        "temperature": 0.7,
-    }
+const GPT3_5 = async (clientText) => {
     try {
-        const { data } = await axiosInstance.post('v1/chat/completions', body)
-        const botAnswer = data.choices[0].message['content']
-        return `\n${botAnswer}`
-    } catch (e) {
-        return `OpenAI Response Error`
+    const completion = await openai.createChatCompletion({
+        model: "gpt-3.5-turbo",
+        temperature: 0.7,
+        messages: [{role: "user", content: clientText}]
+    });
+
+    return res = completion.data.choices[0].message.content
+
+} catch (e) {
+        return e
     }
 }
 
-const chatGPT4 = async (clientText) => {
-    const headers = {
-        'Authorization': `Bearer ${process.env.OPENAI_KEY}`,
-        'Content-Type': 'application/json'
-    }
-
-    const axiosInstance = axios.create({
-        baseURL: 'https://api.openai.com/',
-        timeout: 120000,
-        headers: headers
-    });
-    const body = {
-        "model": "gpt-4",
-        "messages": [{"role": "user", "content": clientText}],
-        "temperature": 0.7,
-    }
+const GPT4 = async (clientText) => {
     try {
-        const { data } = await axiosInstance.post('v1/chat/completions', body)
-        const botAnswer = data.choices[0].message['content']
-        return `\n${botAnswer}`
-    } catch (e) {
-        return `OpenAI Response Error`
+    const completion = await openai.createChatCompletion({
+        model: "gpt-4",
+        temperature: 0.7,
+        messages: [{role: "user", content: clientText}]
+    });
+
+    return res = completion.data.choices[0].message.content
+
+} catch (e) {
+        return e
     }
 }
 
@@ -65,44 +54,31 @@ const bypassGPT = async (clientText, number_of_attemps, error_word) => {
     let counter = 0
     error_word = error_word.toLowerCase()
     try {
-        const response = await chatGPT(clientText)
+        const response = await GPT3_5(clientText)
         printInfo('Trying to bypass GPT')
-        console.log(response)
         while (response.toLowerCase().includes(error_word) && counter < number_of_attemps) {
-            const response = await chatGPT(clientText)
+            const response = await GPT3_5(clientText)
             counter++
         }
         return response
     } catch (e) {
-        return `OpenAI Response Error`
+        return "```Erro```"
     }
 }
 
-const getDalleResponse = async (clientText) => {
-    const headers = {
-        'Authorization': `Bearer ${process.env.OPENAI_KEY}`,
-        'Content-Type': 'application/json'
-    }
 
-    const axiosInstance = axios.create({
-        baseURL: 'https://api.openai.com/',
-        timeout: 120000,
-        headers: headers
-    });
-
-    const body = {
-        prompt: clientText,
-        n: 1,
-        size: "1024x1024",
-    }
+const getDalle2Response = async (clientText) => {
     try {
-        const { data } = await axiosInstance.post('v1/images/generations', body)
-        return data.data[0].url
+        const response = await openai.createImage({
+            prompt: clientText,
+            n: 1,
+            size: "1024x1024",
+        });
+        return response.data.data[0].url
     } catch (e) {
-        return `OpenAI Response Error`
+        return "```Erro, verifique se o prompt não contém nomes de pessoas famosas e instruções NSFW```"
     }
 }
-
 
 // node functions
 
@@ -208,7 +184,7 @@ const commands = async (message) => {
         case callers.gptquestion:
             const gptquestion = content_after_caller;
             printCall(sender_contact, callers.gptquestion)
-            chatGPT4(gptquestion).then(async (response) => {
+            GPT4(gptquestion).then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
                     printError('GPT resonded with error')
                     message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`) // remove new lines and double quotes
@@ -239,7 +215,7 @@ const commands = async (message) => {
         case callers.dalle:
             printCall(sender_contact, callers.dalle)
             const imgDescription = content_after_caller
-            getDalleResponse(imgDescription, message).then(async (imgUrl)  => {
+            getDalle2Response(imgDescription, message).then(async (imgUrl)  => {
                 const media = await MessageMedia.fromUrl(imgUrl)
                 const options = {
                     media: media,
@@ -316,7 +292,7 @@ const commands = async (message) => {
         case callers.cries:
             printCall(sender_contact, callers.cries)
             question = "Preciso de onomatopeias de choros, apenas me responda com a onomatopeia como se fosse um choro, como 'chore em nhe': nhe nhe nhe (inclua também emojis de choro e emojis do que voce interpretou e achar necessario, por exemplo, se o choro é de um robo, inclua um robo, se é de um pato, inclua um pato, e assim vai.... faça o que achar necessario), não se esqueça dos emojis, a sua reposta deve parecer um CHORO mesmo, na minha requisição eu poderei pedir choros de diferentes coisas, palavras, sons, interprete o que eu quero e responda apenas com a onomatopeia sem nada mais isso é muito importante. Chore in " + content_after_caller
-            chatGPT4(question).then(async (response) => {
+            GPT4(question).then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
                     printError('[+] cries responded with error')
                     chat1.sendMessage(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
@@ -330,7 +306,7 @@ const commands = async (message) => {
         case callers.gpt4:
             const gpt4question = content_after_caller;
             printCall(sender_contact, callers.gpt4)
-            chatGPT4(gpt4question).then(async (response) => {
+            GPT4(gpt4question).then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
                     printError('GPT4 resonded with error')
                     message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`) // remove new lines and double quotes
