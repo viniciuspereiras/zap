@@ -1,12 +1,15 @@
 {
     "ping": "ping",
-    "gpt4":"/gpt4",
+    "gpt4":"/gpt",
     "dalle": "/dalle2",
-    "gptquestion": "/gpt",
+    "gptquestion": "/gpt3",
     "muie": "/muie",
     "cries": "/cries",
     "badgpt": "/bgpt",
     "sticker": "/sticker",
     "show": "/show",
-    "everyone": "@everyone@"
+    "transcribe":"/transcribe",
+    "everyone": "@everyone@",
+    "variation":"/variation"
 }
+
