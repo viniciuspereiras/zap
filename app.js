@@ -5,6 +5,8 @@ const fs = require('fs');
 const { send } = require('process');
 const { Configuration, OpenAIApi } = require("openai");
 const Math = require('mathjs')
+const vision = require('@google-cloud/vision');
+
 
 
 require('dotenv').config()
@@ -66,6 +68,27 @@ const bypassGPT = async (clientText, number_of_attemps, error_word) => {
         return "```Erro```"
     }
 }
+
+async function image2text(message){
+    const client = new vision.ImageAnnotatorClient();
+    if (message.hasQuotedMsg) {
+        const quotedMsg = await message.getQuotedMessage();
+        allowTypes = ["image/png", "image/jpeg"]
+        if (quotedMsg && quotedMsg.hasMedia) {
+            const media = await quotedMsg.downloadMedia();
+		    if(typeof media != "undefined" && typeof media != "null" && allowTypes.includes(String(media.mimetype))){
+                
+		if (!fs.existsSync('./tmp')) {
+			fs.mkdirSync('./tmp');
+		}
+		const fileName = `./tmp/${Math.random().toString(36).substring(7)}.jpg`;
+                fs.writeFileSync(fileName, media.data, { encoding: 'base64' });
+                printSuccess('file saved')
+                const [result] = await client.textDetection(fileName);
+                const detections = result.textAnnotations;
+                return detections[0].description.replace('\n',' ')
+            }}
+}}
 
 
 const getDalle2Response = async (clientText) => {
@@ -192,9 +215,24 @@ const commands = async (message) => {
     let question
 
     switch (caller) {
+        case callers.help:
+            printCall(sender_contact, callers.help)
+            await message.reply("*[-] Help menu [-]*\n\n"+
+            "*ping* ==> Responde um pong, indicando que o bot está funcionando.\n"+
+            "*/dalle2*  ==>  Gera imagens com base em algum pedido [funciona melhor em ingles]\n"+
+	    "*/gpt*  ==>  Conversa com o chatGPT versão 3.5\n"+
+            "*/gpt4* ==> Conversa com o chatGPT versão 4.0 [mais inteligente pra algumas coisas]\n"+
+            "*/bgpt*  ==> Conversa com o chatGPT ignorante e muito puto.\n"+
+            "*@everyone*  ==> Marca todos os mebros do um grupo.\n"+
+            "*/readimg*  ==> Use respondendo uma foto, e o bot retorna textos contidos nela.\n"+
+            "*/stickerd*   ==> Use respondendo uma foto, video ou gif e o bot vai transformar em figurinha\n"+
+            "*/show*  ==> Use respondendo uma foto ou video, e o bot irá enviar ela de volta [mesmo que seja visualização única]\n"
+            )
+
+
         case callers.ping:
             printCall(sender_contact, callers.ping)
-            await message.reply('pong')
+            await message.reply('*pong!*')
             break
 
         case callers.gptquestion:
@@ -206,10 +244,10 @@ const commands = async (message) => {
             GPT4(gptquestion).then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
                     printError('GPT resonded with error')
-                    message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`) // remove new lines and double quotes
+                    message.reply("*[-] GPT [-]*"+`\n\n${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`) // remove new lines and double quotes
                 }else{
                     printSuccess('GPT resonded OK')
-                    message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
+                    message.reply("*[-] GPT [-]*"+`\n\n${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
                 }
             })
             break
@@ -223,10 +261,10 @@ const commands = async (message) => {
                 bypassGPT(bad_gptquestion, 15, 'desculp').then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
                     printError('BADGPT responded with error')
-                    message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
+                    message.reply("*[-] GPT [-]*"+`\n\n${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
                 }else {
                     printSuccess('BADGPT reponded OK')
-                    message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
+                    message.reply("*[-] GPT [-]*"+`\n\n${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
                 }
             }).catch((error) => {
                 printError('BADGPT responded with error')
@@ -267,9 +305,11 @@ const commands = async (message) => {
         case callers.show:
             printCall(sender_contact, callers.show)
             if (quotedMsg && quotedMsg.hasMedia) {
+
                 const media = await quotedMsg.downloadMedia();
                 const options = {
                     media: media,
+                    caption: quotedMsg.body,
                     sendMediaAsSticker: false,
                 }
                 await message.reply(media, null, options)
@@ -302,10 +342,10 @@ const commands = async (message) => {
             bypassGPT(question, 15, 'desculp').then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
                     printError('MUIE responded with error')
-                    message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
+                    message.reply("[-] GPT [-]*"`\n\n${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
                 }else {
                     printSuccess('MUIE reponded OK')
-                    message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
+                    message.reply("[-] GPT [-]*"`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
                 }
         }).catch((error) => {
             printError('MUIE responded with error')
@@ -322,7 +362,7 @@ const commands = async (message) => {
             question = "Preciso de onomatopeias de choros, apenas me responda com a onomatopeia como se fosse um choro, como 'chore em nhe': nhe nhe nhe (inclua também emojis de choro e emojis do que voce interpretou e achar necessario, por exemplo, se o choro é de um robo, inclua um robo, se é de um pato, inclua um pato, e assim vai.... faça o que achar necessario), não se esqueça dos emojis, a sua reposta deve parecer um CHORO mesmo, na minha requisição eu poderei pedir choros de diferentes coisas, palavras, sons, interprete o que eu quero e responda apenas com a onomatopeia sem nada mais isso é muito importante. Chore in " + content_after_caller
             GPT4(question).then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
-                    printError('[+] cries responded with error')
+                    printError('cries responded with error')
                     chat1.sendMessage(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
                 }else {
                     printSuccess('[+] cries reponded OK')
@@ -340,11 +380,18 @@ const commands = async (message) => {
             GPT4(gpt4question).then(async (response) => {
                 if (response.includes('Erro ao processar a solicitação.')) {
                     printError('GPT4 resonded with error')
-                    message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`) // remove new lines and double quotes
+                    message.reply("*[-] GPT [-]*"+`\n\n${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`) // remove new lines and double quotes
                 }else{
                     printSuccess('GPT4 resonded OK')
-                    message.reply(`${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
+                    message.reply("*[-] GPT [-]*"+`\n\n${response.replace(/(\r\n|\n|\r)/gm, "").replaceAll('"', '')}`)
                 }
+            })
+            break
+        
+        case callers.readimg:
+            printCall(sender_contact, callers.readimg)
+            image2text(message).then(async (responsetxt) => {
+                message.reply("*[-] Image to text [-]*\n\n  ```"+ responsetxt +"```")
             })
             break
         

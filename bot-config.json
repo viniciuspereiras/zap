@@ -1,4 +1,6 @@
 {
+    "help":"/help",
+    "readimg":"/readimg",
     "ping": "ping",
     "gpt4":"/gpt4",
     "dalle": "/dalle2",
@@ -8,5 +10,5 @@
     "badgpt": "/bgpt",
     "sticker": "/sticker",
     "show": "/show",
-    "everyone": "@everyone@"
+    "everyone": "@everyone"
 }
