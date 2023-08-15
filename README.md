@@ -63,6 +63,7 @@ npm install
 Puppteer for default uses chromium as a browser engine, but chromium does not have the CODECS that WhatsApp uses for send videos and GIFs (included animated stickers), so if you want to send this type of media, consider install google-chrome on your server.
 - in ubuntu search on google how to install
 - in Arch (I use arch btw) `yay -S google-chrome`
+
 **If you want to not use google chrome:**
 ```js
 // [...]
