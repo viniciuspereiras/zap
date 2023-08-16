@@ -33,6 +33,7 @@ case callers.ping:
 ```
 In this file you can also remove the commands that you dont want.
 ## Install and config
+
 ### Basics
 First of all, clone the repository
 
@@ -55,6 +56,33 @@ Now, add your OpenAI keys (required for GPT functions, Dalle), if you dont want 
 
 Put your number in the config (.env) file following the example in the file (obrigatory)
 
+### Docker
+
+Build docker image
+```
+docker build . -t zap-zapbot:latest
+```
+
+Now, run the container
+```
+docker run --name zapbot zap-zapbot:latest
+```
+NOTE: If you remove container, your session will be lost and you will be asked to scan a new QRCode.
+
+### Docker Compose
+
+Build and start app container
+```
+docker-compose build
+docker-compose up -d
+```
+
+Show logs and scan QRCode
+```
+docker-compose logs -tfn50
+```
+After scanning QRCode you can hit Ctrl-C to return to CLI
+
 ### install npm
 ```
 npm install
@@ -63,7 +91,7 @@ npm install
 - in ubuntu search on google how to install
 - in Arch (I use arch btw) `yay -S google-chrome`
 
-### Fisrt run
+### First run
 Now you have all installed, you can test running
 ```
 node app.js

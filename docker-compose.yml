@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+
+  zapbot:
+    container_name: zapbot
+    restart: unless-stopped 
+    build: .
+    env_file: 
+      - .env
+    ports:
+      - '1888:1888'
+    # volumes:
+    #   - './vol/sessions:/app/vol/sessions'
+    #   - './config:/app/config'
+    # links: 
+    #   - database
+    deploy:
+      resources: 
+        limits:
+          memory: 1024M
+  # database:
+  #   container_name: lennon-db
+  #   image: postgres:14.5-alpine
+  #   restart: always
+  #   env_file:
+  #     - config/.env
+  #   volumes:
+  #     - ./vol/database/data:/var/lib/postgresql/data
