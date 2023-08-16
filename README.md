@@ -67,6 +67,13 @@ Now, run the container
 ```
 docker run --name zapbot zap-zapbot:latest
 ```
+
+Show logs and scan QRCode
+```
+docker-compose logs -tfn50 zapbot
+```
+After scanning QRCode you can hit Ctrl-C to return to CLI
+
 NOTE: If you remove container, your session will be lost and you will be asked to scan a new QRCode.
 
 ### Docker Compose
@@ -79,9 +86,12 @@ docker-compose up -d
 
 Show logs and scan QRCode
 ```
-docker-compose logs -tfn50
+docker-compose logs -tfn50 zapbot
 ```
 After scanning QRCode you can hit Ctrl-C to return to CLI
+
+NOTE: If you remove container, your session will be lost and you will be asked to scan a new QRCode.
+
 
 ### install npm
 ```
