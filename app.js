@@ -39,7 +39,7 @@ const GPT3_5 = async (clientText) => {
 const GPT4 = async (clientText) => {
     try {
     const completion = await openai.createChatCompletion({
-        model: "gpt-4",
+        model: "gpt-3.5-turbo",
         temperature: 0.7,
         messages: [{role: "user", content: clientText}]
     });
@@ -129,7 +129,9 @@ printInfo('Starting bot...')
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        executablePath: '/usr/bin/google-chrome-stable'
+        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        executablePath: '/usr/bin/google-chrome-stable',
+        args: ['--no-sandbox'],
     }
 })
 printSuccess('Client created')
