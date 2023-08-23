@@ -1,12 +1,13 @@
 {
-    "ping": "ping",
-    "gpt4":"/gpt4",
-    "dalle": "/dalle2",
-    "gptquestion": "/gpt",
-    "muie": "/muie",
-    "cries": "/cries",
-    "badgpt": "/bgpt",
-    "sticker": "/sticker",
-    "show": "/show",
-    "everyone": "@everyone@"
+    "ping": "/p.ping",
+    "gpt4":"/p.gpt4",
+    "dalle": "/p.dalle2",
+    "gptquestion": "/p.gpt",
+    "muie": "/p.muie",
+    "cries": "/p.cries",
+    "badgpt": "/p.bgpt",
+    "sticker": "/p.sticker",
+    "show": "/p.show",
+    "everyone": "p.@everyone@",
+    "transcribe": "/p.transcribe"
 }
